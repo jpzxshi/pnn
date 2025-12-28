@@ -133,12 +133,14 @@ def AL_plot(data, net):
     plt.plot(flow_pred[:, 0], label='PNN')
     plt.legend()
     plt.ylim([-2.5, 2.5])
+    plt.title('Training data')
     
     plt.subplot(212)
     plt.plot(flow_true2[:, 0], label='Reference')
     plt.plot(flow_pred2[:, 0], label='PNN')
     plt.legend()
     plt.ylim([-2.5, 2.5])
+    plt.title('Test data')
     
     plt.savefig('AL.pdf')
     

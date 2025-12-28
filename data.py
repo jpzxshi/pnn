@@ -159,11 +159,14 @@ class ALData(ln.Data):
         a1 = dx * dx * (p1 * p1 + q1 * q1)
         a2 = dx * dx * (p2 * p2 + q2 * q2)
         
-        tau0 = (np.exp(a0) - 1) / a0
-        tau1 = (np.exp(a1) - 1) / a1
-        tau2 = (np.exp(a2) - 1) / a2
-        
-        dtau1 = (np.exp(a1) * (a1 - 1) + 1) / (a1 ** 2)
+        #tau0 = (np.exp(a0) - 1) / a0
+        #tau1 = (np.exp(a1) - 1) / a1
+        #tau2 = (np.exp(a2) - 1) / a2
+        #dtau1 = (np.exp(a1) * (a1 - 1) + 1) / (a1 ** 2)
+        tau0 = np.sqrt((np.exp(a0) - 1) / a0)
+        tau1 = np.sqrt((np.exp(a1) - 1) / a1)
+        tau2 = np.sqrt((np.exp(a2) - 1) / a2)
+        dtau1 = (np.exp(a1) * (a1 - 1) + 1) / (a1 ** 2) / (2 * tau1)
         
         dp = N * N * (2 * dx * dx * p1 * dtau1 * (tau0 * (p1 * p0 + q1 * q0) + tau2 * (p1 * p2 + q1 * q2))
              + tau1 * (tau0 * p0 + tau2 * p2) - 2 * p1)
@@ -185,7 +188,8 @@ class ALData(ln.Data):
         # (p,q) to (u,v)
         p, q = flow[..., :N], flow[..., N:]
         b = dx * dx * (p * p + q * q)
-        tau = (np.exp(b) - 1) / b
+        #tau = (np.exp(b) - 1) / b
+        tau = np.sqrt((np.exp(b) - 1) / b)
         u, v = p * tau, q * tau
         return np.hstack((u, v))
         

@@ -223,10 +223,10 @@ def AL():
     AL_plot(data, ln.Brain.Best_model())
     
 def TB():
-    device = 'cpu' # 'cpu' or 'gpu'
+    device = 'gpu' # 'cpu' or 'gpu'
     # data
     h = 0.1
-    train_num = 40
+    train_num = 100
     test_num = 100
     # AEPNN
     lam = 1
@@ -243,11 +243,13 @@ def TB():
     symp_activation = 'sigmoid'
     # training
     lr = 0.001
-    iterations = 5000
+    iterations = 20000
     print_every = 1000
     
     data = TBData(h, train_num, test_num)
-    ae = ln.nn.AE(data.dim, latent_dim, ae_depth, ae_width, ae_activation)
+    ae = ln.nn.AE(encoder_size=[data.dim] + [ae_width] * (ae_depth - 1) + [latent_dim],
+                  decoder_size=[latent_dim] + [ae_width] * (ae_depth - 1) + [data.dim], 
+                  activation=ae_activation)
     if symp_type == 'LA':
         sympnet = ln.nn.LASympNet(latent_dim, symp_LAlayers, symp_LAsublayers, symp_activation)
     elif symp_type == 'G':
@@ -262,7 +264,7 @@ def TB():
         'iterations': iterations,
         'batch_size': None,
         'print_every': print_every,
-        'save': True,
+        'save': 'best_only_train',
         'callback': None,
         'dtype': 'float',
         'device': device
@@ -276,11 +278,11 @@ def TB():
     TB_plot(data, ln.Brain.Best_model())
 
 def main():
-    LV()
-    #PD()
-    #LF()
-    #AL()
-    #TB()
+    LV() #Lotka–Volterra Equation
+    #PD() #Extended Pendulum System
+    #LF() #Charged Particle Governed by the Lorentz Force
+    #AL() #Ablowitz–Ladik Model of Nonlinear Schrödinger Equation
+    #TB() #Pixel Observations of Two-Body Problem
     
 if __name__ == '__main__':
     main()

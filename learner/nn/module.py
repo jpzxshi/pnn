@@ -3,9 +3,10 @@
 """
 import abc
 import torch
+from ..utils import map_elementwise
 
 class Module(torch.nn.Module):
-    '''Standard module format. 
+    '''Standard module format.
     '''
     def __init__(self):
         super(Module, self).__init__()
@@ -55,7 +56,9 @@ class Module(torch.nn.Module):
 
     @property
     def act(self):
-        if self.activation == 'sigmoid':
+        if callable(self.activation):
+            return self.activation
+        elif self.activation == 'sigmoid':
             return torch.sigmoid
         elif self.activation == 'relu':
             return torch.relu
@@ -65,22 +68,11 @@ class Module(torch.nn.Module):
             return torch.elu
         else:
             raise NotImplementedError
-    
-    @property        
-    def Act(self):
-        if self.activation == 'sigmoid':
-            return torch.nn.Sigmoid()
-        elif self.activation == 'relu':
-            return torch.nn.ReLU()
-        elif self.activation == 'tanh':
-            return torch.nn.Tanh()
-        elif self.activation == 'elu':
-            return torch.nn.ELU()
-        else:
-            raise NotImplementedError
 
     @property
     def weight_init_(self):
+        #if callable(self.initializer):
+        #    return self.initializer
         if self.initializer == 'He normal':
             return torch.nn.init.kaiming_normal_
         elif self.initializer == 'He uniform':
@@ -92,31 +84,50 @@ class Module(torch.nn.Module):
         elif self.initializer == 'orthogonal':
             return torch.nn.init.orthogonal_
         elif self.initializer == 'default':
-            if self.activation == 'relu':
-                return torch.nn.init.kaiming_normal_
-            elif self.activation == 'tanh':
-                return torch.nn.init.orthogonal_
-            else:
-                return lambda x: None
+            return lambda x: None
         else:
             raise NotImplementedError
             
-class StructureNN(Module):
+    @property
+    def bias_init_(self):
+        #if callable(self.initializer):
+        #    return self.initializer
+        if self.initializer == 'He normal':
+            return torch.nn.init.zeros_
+        elif self.initializer == 'He uniform':
+            return torch.nn.init.zeros_
+        elif self.initializer == 'Glorot normal':
+            return torch.nn.init.zeros_
+        elif self.initializer == 'Glorot uniform':
+            return torch.nn.init.zeros_
+        elif self.initializer == 'orthogonal':
+            return torch.nn.init.zeros_
+        elif self.initializer == 'default':
+            return lambda x: None
+        else:
+            raise NotImplementedError
+            
+    @map_elementwise
+    def _to_tensor(self, x):
+        if not isinstance(x, torch.Tensor):
+            x = torch.tensor(x, dtype=self.dtype, device=self.device)
+        return x
+            
+class Map(Module):
     '''Structure-oriented neural network used as a general map based on designing architecture.
     '''
     def __init__(self):
-        super(StructureNN, self).__init__()
-        
+        super(Map, self).__init__()
+    
     def predict(self, x, returnnp=False):
-        if not isinstance(x, torch.Tensor):
-            x = torch.tensor(x, dtype=self.dtype, device=self.device)
+        x = self._to_tensor(x)
         return self(x).cpu().detach().numpy() if returnnp else self(x)
     
-class LossNN(Module, abc.ABC):
+class Algorithm(Module, abc.ABC):
     '''Loss-oriented neural network used as an algorithm based on designing loss.
     '''
     def __init__(self):
-        super(LossNN, self).__init__()
+        super(Algorithm, self).__init__()
         
     #@final
     def forward(self, x):
